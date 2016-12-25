@@ -24,6 +24,7 @@ public class EnemyBehavior : MonoBehaviour
         }
     }
 
+
     private void Update()
     {
         float prob = firingRate * Time.deltaTime;
@@ -33,6 +34,8 @@ public class EnemyBehavior : MonoBehaviour
             EnemyFiring();
         }
     }
+
+
 
     private void EnemyFiring()
     {
