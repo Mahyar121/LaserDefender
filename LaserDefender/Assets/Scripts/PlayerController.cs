@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    public GameObject projectile;
+    public float projectileSpeed;
+    public float firingRate;
     public float speed = 5.0f;
     public float padding = .002f;
 
@@ -28,8 +31,16 @@ public class PlayerController : MonoBehaviour
         HandleInput();
 	}
 
+    void Fire()
+    {
+        // setting the Instantiate object as GameObject so we can set it to beam
+        GameObject beam = Instantiate(projectile, transform.position, Quaternion.identity) as GameObject;
+        beam.GetComponent<Rigidbody2D>().velocity = new Vector3(0f, projectileSpeed, 0f);
+    }
+
     void HandleInput()
     {
+      
         // using the GetKey because we want to be able to hold down the button
         if(Input.GetKey(KeyCode.LeftArrow))
         {
@@ -39,6 +50,18 @@ public class PlayerController : MonoBehaviour
         else if (Input.GetKey(KeyCode.RightArrow))
         {
             transform.position += new Vector3(speed * Time.deltaTime, 0f, 0f);
+        }
+        // using GetKeyDown so the player can't hold the shooting button
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            // If the player holds down the fire button then it will shoot lasers at a certain rate
+            InvokeRepeating("Fire", 0.000001f, firingRate);
+            
+        }
+        if (Input.GetKeyUp(KeyCode.Space))
+        {
+            // If the player lets go of the fire button then it will stop shooting
+            CancelInvoke("Fire");
         }
         // restrict the player to the game space
         float newX = Mathf.Clamp(transform.position.x, xmin, xmax);
