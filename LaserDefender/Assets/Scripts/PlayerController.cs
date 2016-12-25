@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    public float health = 250f;
     public GameObject projectile;
     public float projectileSpeed;
     public float firingRate;
@@ -33,8 +34,10 @@ public class PlayerController : MonoBehaviour
 
     void Fire()
     {
+        // beams start above player
+        Vector3 offset = new Vector3(0f, 1f, 0);
         // setting the Instantiate object as GameObject so we can set it to beam
-        GameObject beam = Instantiate(projectile, transform.position, Quaternion.identity) as GameObject;
+        GameObject beam = Instantiate(projectile, transform.position + offset, Quaternion.identity) as GameObject;
         beam.GetComponent<Rigidbody2D>().velocity = new Vector3(0f, projectileSpeed, 0f);
     }
 
@@ -66,5 +69,25 @@ public class PlayerController : MonoBehaviour
         // restrict the player to the game space
         float newX = Mathf.Clamp(transform.position.x, xmin, xmax);
         transform.position = new Vector3(newX, transform.position.y, transform.position.z);
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        Projectile missile = collision.gameObject.GetComponent<Projectile>();
+        if (missile)
+        {
+            health -= missile.GetDamage();
+            // destroys this missile on impact
+            missile.Hit();
+            if (health <= 0)
+            {
+                Die();
+            }
+        }
+    }
+
+    void Die()
+    {
+        Destroy(gameObject);
     }
 }
