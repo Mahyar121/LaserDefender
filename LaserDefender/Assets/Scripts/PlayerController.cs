@@ -11,6 +11,8 @@ public class PlayerController : MonoBehaviour
     public float speed = 5.0f;
     public float padding = .002f;
 
+    public AudioClip fireSound;
+
     float xmin;
     float xmax;
 
@@ -39,6 +41,7 @@ public class PlayerController : MonoBehaviour
         // setting the Instantiate object as GameObject so we can set it to beam
         GameObject beam = Instantiate(projectile, transform.position + offset, Quaternion.identity) as GameObject;
         beam.GetComponent<Rigidbody2D>().velocity = new Vector3(0f, projectileSpeed, 0f);
+        AudioSource.PlayClipAtPoint(fireSound, transform.position);
     }
 
     void HandleInput()
