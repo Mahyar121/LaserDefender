@@ -8,6 +8,14 @@ public class EnemyBehavior : MonoBehaviour
     public float projectileSpeed = 5f;
     public float health = 150f;
     public float firingRate = 0.5f;
+    public int scoreValue = 150;
+
+    private ScoreKeeper scoreKeeper;
+
+    private void Start()
+    {
+        scoreKeeper = GameObject.Find("Score").GetComponent<ScoreKeeper>();
+    }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -20,6 +28,7 @@ public class EnemyBehavior : MonoBehaviour
             if (health <= 0)
             {
                 Destroy(gameObject);
+                scoreKeeper.Score(scoreValue);
             }
         }
     }
