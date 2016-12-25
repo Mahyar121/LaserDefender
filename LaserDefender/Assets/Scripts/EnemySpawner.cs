@@ -8,30 +8,34 @@ public class EnemySpawner : MonoBehaviour
     public GameObject enemyPrefab;
     public float width = 12f;
     public float height = 7f;
-    private bool movingRight = true;
     public float speed = 5f;
     public float spawnDelay = 0.5f;
 
-    private float xmax;
-    private float xmin;
-    public float xpadding;
+    private int direction = 1;
+    private float boundaryRightEdge, boundaryLeftEdge;
+    public float xpadding = 1;
     
 	// Use this for initialization
 	void Start ()
     {
-        float distanceToCamera = transform.position.z - Camera.main.transform.position.z;
-        Vector3 leftBoundary = Camera.main.ViewportToWorldPoint(new Vector3(0f, 0f, distanceToCamera));
-        Vector3 rightBoundary = Camera.main.ViewportToWorldPoint(new Vector3(1f, 0f, distanceToCamera));
-        xmax = rightBoundary.x + xpadding;
-        xmin = leftBoundary.x - xpadding;
-        //SpawnEnemies();
+        Camera camera = Camera.main;
+        float distanceToCamera = transform.position.z - camera.transform.position.z;
+        boundaryLeftEdge = camera.ViewportToWorldPoint(new Vector3(0f, 0f, distanceToCamera)).x + xpadding;
+        boundaryRightEdge = camera.ViewportToWorldPoint(new Vector3(1f, 1f, distanceToCamera)).x - xpadding;
         SpawnUntilFull();
 	}
 
     public void OnDrawGizmos()
     {
-        // Draws a box around the spawner area
-        Gizmos.DrawWireCube(transform.position, new Vector3(width, height));
+        float xmin, xmax, ymin, ymax;
+        xmin = transform.position.x - 0.5f * width;
+        xmax = transform.position.x + 0.5f * width;
+        ymin = transform.position.y - 0.5f * height;
+        ymax = transform.position.y + 0.5f * height;
+        Gizmos.DrawLine(new Vector3(xmin, ymin, 0), new Vector3(xmin, ymax));
+        Gizmos.DrawLine(new Vector3(xmin, ymax, 0), new Vector3(xmax, ymax));
+        Gizmos.DrawLine(new Vector3(xmax, ymax, 0), new Vector3(xmax, ymin));
+        Gizmos.DrawLine(new Vector3(xmax, ymin, 0), new Vector3(xmin, ymin));
     }
     // Update is called once per frame
     void Update ()
@@ -42,30 +46,23 @@ public class EnemySpawner : MonoBehaviour
 
     void HandleMovement()
     {
-        if (movingRight)
-        {
-            // speed * Time.deltaTime so it moves consistently on all PCs
-            // transform.position += Vector3.right * speed * Time.deltaTime;
-            transform.position += new Vector3(speed * Time.deltaTime, 0f, 0f);
-        }
-        else
-        {
-            // transform.position += Vector3.left * speed * Time.deltaTime;
-            transform.position += new Vector3(-speed * Time.deltaTime, 0f, 0f);
-        }
         float rightEdgeOfFormation = transform.position.x + (0.5f * width);
         float leftEdgeOfFormation = transform.position.x - (0.5f * width);
-        if (leftEdgeOfFormation < xmin)
+        if (leftEdgeOfFormation < boundaryLeftEdge)
         {
-            movingRight = true;
+            direction = 1;
         }
-        else if(rightEdgeOfFormation > xmax)
+        else if(rightEdgeOfFormation > boundaryRightEdge)
         {
-            movingRight = !movingRight;
+            direction = -1;
         }
         if (AllMembersDead())
         {
-            //SpawnEnemies();
+            SpawnUntilFull();
+        }
+        transform.position += new Vector3(direction * speed * Time.deltaTime, 0f, 0f);
+        if(AllMembersDead())
+        {
             SpawnUntilFull();
         }
     }
@@ -111,14 +108,4 @@ public class EnemySpawner : MonoBehaviour
        
     }
 
-    void SpawnEnemies()
-    {
-        foreach (Transform child in transform)
-        {
-            // Spawns an enemy, and have to declare as GameObject otherwise would be just an object
-            GameObject enemy = Instantiate(enemyPrefab, child.position, Quaternion.identity) as GameObject;
-            // Puts the spawned enemy inside the GameObject as a child
-            enemy.transform.parent = child;
-        }
-    }
 }
